@@ -74,13 +74,13 @@ func (s SQLiteNoteStore) List() ([]model.Note, error) {
 }
 
 func (s SQLiteNoteStore) GetByID(id int) (model.Note, error) {
-	row := s.db.QueryRow("SELECT * FROM notes WHERE id = ?", id)
+	row := s.db.QueryRow("SELECT  id, title, body, tags, created_at, updated_at FROM notes WHERE id = ?", id)
 	var note model.Note
 	var tagsStr string
 
 	if err := row.Scan(&note.ID, &note.Title, &note.Body, &tagsStr, &note.CreatedAt, &note.UpdatedAt); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return model.Note{}, fmt.Errorf("note %d not found", id)
+			return model.Note{}, fmt.Errorf("%w: note %d", ErrNotFound, id)
 		}
 		return model.Note{}, fmt.Errorf("get note: %w", err)
 	}
